@@ -127,6 +127,77 @@ int ulog_stop()
     return 0;
 }
 
+static void _parse_ulog(const uint8_t *data)
+{
+    struct ulog_msg_header *header = (struct ulog_msg_header *)data;
+    uint16_t index = sizeof(struct ulog_msg_header);
+
+    switch (header->msg_type) {
+    case 'I': {
+        uint8_t key_len = data[index];
+        char key[key_len + 1];
+        char value[1024];
+
+        // account key_len
+        index += sizeof(uint8_t);
+
+        memcpy(key, &data[index], key_len);
+        key[key_len] = 0;
+        // account key
+        index += key_len;
+
+        // handle int32_t time_ref_utc
+        if (key[0] == 'i') {
+            uint32_t *v = (uint32_t *) &data[index];
+            sprintf(value, "%u", *v);
+        } else {
+            uint16_t len = header->msg_size - index + sizeof(struct ulog_msg_header);
+            if (len >= sizeof(value)) {
+                printf("information { key=%s value=%s key_len=%u }\n", key, "value bigger than buffer", key_len);
+                break;
+            }
+            memcpy(value, &data[index], len);
+            value[len] = 0;
+        }
+
+        printf("information { key=%s value=%s key_len=%u }\n", key, value, key_len);
+        break;
+    }
+    case 'P': {
+        uint8_t key_len = data[index];
+        char key[key_len + 1];
+
+        // account key_len
+        index += sizeof(uint8_t);
+
+        memcpy(key, &data[index], key_len);
+        key[key_len] = 0;
+        // account key
+        index += key_len;
+
+        printf("parameter { key=%s value=TODO }\n", key);
+        break;
+    }
+    case 'F': {
+        char value[1024];
+        uint16_t len = header->msg_size;
+
+        if (len >= sizeof(value)) {
+            printf("format len=%u { len bigger than value buffer }\n", len);
+            break;
+        }
+        memcpy(value, &data[index], len);
+        value[len] = 0;
+        printf("format len=%u { value=%s }\n", len, value);
+        break;
+    }
+    default: {
+        printf("type=%c size=%u not handled\n", header->msg_type, header->msg_size);
+        break;
+    }
+    }
+}
+
 static void _ulog_flush()
 {
     while (_msg_buffer_len > sizeof(struct ulog_msg_header)) {
@@ -134,8 +205,11 @@ static void _ulog_flush()
         const uint16_t full_msg_size = header->msg_size + sizeof(struct ulog_msg_header);
 
         if (full_msg_size > _msg_buffer_len) {
+            log_warning("msg type=%c size=%u not flushed", header->msg_type, header->msg_size);
             break;
         }
+
+        //_parse_ulog(_msg_buffer);
 
         fwrite(_msg_buffer, 1, full_msg_size, _ulog_file);
         _msg_buffer_len -= full_msg_size;
@@ -146,10 +220,15 @@ static void _ulog_flush()
 static void _ulog_data_handle(mavlink_logging_data_t *ulog_data)
 {
     bool drops = false;
+    static uint32_t msg_total = 0;
+    static uint32_t msg_drop = 0;
 
+    msg_total++;
     /* Check for message drops */
     if (_ulog_seq + 1 != ulog_data->sequence) {
         drops = true;
+        msg_drop++;
+        log_warning("ULog msg total=%u drops=%u %u%%", msg_total, msg_drop, (msg_drop * 100 / msg_total));
     }
     _ulog_seq = ulog_data->sequence;
 
