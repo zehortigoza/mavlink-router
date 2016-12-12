@@ -32,6 +32,7 @@
 #include "comm.h"
 #include "log.h"
 #include "util.h"
+#include "ulog.h"
 
 class Mainloop {
 public:
@@ -247,6 +248,10 @@ void Mainloop::handle_read(Endpoint *endpoint)
      */
     while (endpoint->read_msg(&buf) > 0) {
         if (endpoint == g_master) {
+
+            if (ulog_handle(&buf))
+                continue;
+
             for (Endpoint **e = g_endpoints; *e != nullptr; e++) {
                 write_msg(*e, &buf);
             }
@@ -382,8 +387,14 @@ int main(int argc, char *argv[])
 
     mainloop.report_msg_statistics = opt.report_msg_statistics;
 
+    /*
+     * TODO: Add a parameter were user will set the ULog directory,
+     * only when this parameter is set the ULog will start.
+     */
+    ulog_start(g_master, ".");
     mainloop.loop();
 
+    ulog_stop();
     free_endpoints();
 
     log_close();
