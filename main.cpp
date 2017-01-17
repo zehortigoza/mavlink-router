@@ -29,11 +29,30 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <set>
+
 #include "comm.h"
 #include "log.h"
 #include "util.h"
 #include "ulog.h"
 
+struct timeout {
+    struct timespec timeout;
+    struct timespec expire;
+    const void *data;
+    bool (*cb)(void *data);
+    bool remove_me;
+};
+
+static int compare_timeout(const struct timeout *t1, const struct timeout *t2)
+{
+    int ret = (t1->expire.tv_sec > t2->expire.tv_sec) - (t1->expire.tv_sec < t2->expire.tv_sec);
+    if (ret != 0)
+        return ret;
+    return (t1->expire.tv_nsec > t2->expire.tv_nsec) - (t1->expire.tv_nsec < t2->expire.tv_nsec);
+}
+
+//see test.cpp
 class Mainloop {
 public:
     int open();
@@ -43,9 +62,14 @@ public:
     void handle_read(Endpoint *e);
     void handle_canwrite(Endpoint *e);
     void write_msg(Endpoint *e, const struct buffer *buf);
+    void *timeout_add(uint32_t timeout_ms, bool (*cb)(void *data), const void *data);
+    void timeout_del(void *handle);
 
     int epollfd = -1;
     bool report_msg_statistics = false;
+
+private:
+    std::set<struct timeout *, int (*)(const struct timeout *, const struct timeout *)> timeout_list(compare_timeout);
 };
 
 struct endpoint_address {
@@ -306,6 +330,21 @@ void Mainloop::loop()
             }
         }
     }
+}
+
+void *Mainloop::timeout_add(uint32_t timeout_ms, bool (*cb)(void *data), const void *data)
+{
+    struct timeout *t = (struct timeout *) malloc(sizeof(struct timeout));
+    t->cb = cb;
+    t->data = data;
+    t->remove_me = false;
+    t->timeout.tv_sec = timeout_ms / MSEC_PER_SEC;
+    t->timeout.tv_nsec = (timeout_ms % MSEC_PER_SEC) * NSEC_PER_MSEC;
+}
+
+void Mainloop::timeout_del(void *handle)
+{
+
 }
 
 static void exit_signal_handler(int signum)

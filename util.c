@@ -44,6 +44,17 @@ usec_t now_usec(void)
     return ts_usec(&ts);
 }
 
+void
+timespec_add(const struct timespec *t1, const struct timespec *t2, struct timespec *result)
+{
+    result->tv_nsec = t1->tv_nsec + t2->tv_nsec;
+    result->tv_sec = t1->tv_sec + t2->tv_sec;
+    if ((unsigned long long)result->tv_nsec >= NSEC_PER_SEC) {
+        result->tv_nsec -= NSEC_PER_SEC;
+        result->tv_sec++;
+    }
+}
+
 int safe_atoul(const char *s, unsigned long *ret)
 {
     char *x = NULL;

@@ -48,6 +48,11 @@ int safe_atoi(const char *s, int *ret);
 usec_t now_usec(void);
 usec_t ts_usec(const struct timespec *ts);
 
+static inline void now_timespec(struct timespec *ts)
+{
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+}
+
 #ifdef __cplusplus
 }
 #endif
