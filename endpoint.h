@@ -35,6 +35,11 @@ public:
     virtual int write_msg(const struct buffer *pbuf) = 0;
     virtual int flush_pending_msgs() = 0;
 
+    /*
+     * Copy message in from_buffer buffer adding back the trimmed zeros to to_buffer.
+     */
+    void untrim_msg(const struct buffer *from_buffer, struct buffer *to_buffer);
+
     uint8_t get_system_id() { return _system_id; }
 
     static void set_router(Router *router) { _router = router; }
