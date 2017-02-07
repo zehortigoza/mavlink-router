@@ -28,7 +28,7 @@ struct endpoint_entry {
     bool remove;
 };
 
-class Mainloop : public Router {
+class Mainloop : public Router, public Timeout_Manager {
 public:
     int open();
     int add_fd(int fd, void *data, int events);
@@ -41,8 +41,8 @@ public:
     void handle_tcp_connection();
     int write_msg(Endpoint *e, const struct buffer *buf);
     void process_tcp_hangups();
-    Timeout *add_timeout(uint32_t timeout_msec, bool (*cb)(void *data), const void *data);
-    void del_timeout(Timeout *t);
+    Timeout *add_timeout(uint32_t timeout_msec, bool (*cb)(void *data), const void *data) override;
+    void del_timeout(Timeout *t) override;
 
     void free_endpoints(struct opt *opt);
     bool add_endpoints(Mainloop &mainloop, const char *uartstr, struct opt *opt);

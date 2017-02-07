@@ -17,6 +17,8 @@
  */
 #pragma once
 
+#include <stdint.h>
+
 #include "pollable.h"
 
 class Timeout : public Pollable {
@@ -30,4 +32,10 @@ public:
 private:
     bool (*_cb)(void *data);
     const void *_data;
+};
+
+class Timeout_Manager {
+public:
+    virtual Timeout *add_timeout(uint32_t timeout_msec, bool (*cb)(void *data), const void *data) = 0;
+    virtual void del_timeout(Timeout *t) = 0;
 };
