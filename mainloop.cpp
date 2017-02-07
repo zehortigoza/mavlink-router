@@ -25,6 +25,7 @@
 #include <unistd.h>
 
 #include "log.h"
+#include "ulog.h"
 #include "util.h"
 
 static bool should_exit = false;
@@ -308,6 +309,9 @@ bool Mainloop::add_endpoints(Mainloop &mainloop, const char *uartstr, struct opt
     for (e = opt->ep_addrs; e; e = e->next)
         n_endpoints++;
 
+    if (opt->logs_dir)
+        n_endpoints++;
+
     g_endpoints = (Endpoint**) calloc(n_endpoints + 1, sizeof(Endpoint*));
 
     if (uartstr) {
@@ -346,6 +350,11 @@ bool Mainloop::add_endpoints(Mainloop &mainloop, const char *uartstr, struct opt
 
     if (opt->tcp_port)
         g_tcp_fd = tcp_open(opt->tcp_port);
+
+    if (opt->logs_dir) {
+        ULog *ulog = new ULog(this);
+        g_endpoints[i] = ulog;
+    }
 
     return true;
 }

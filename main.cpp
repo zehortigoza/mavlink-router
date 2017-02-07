@@ -35,6 +35,7 @@ static struct opt opt = {
         .master_addrs = nullptr,
         .tcp_port = MAVLINK_TCP_PORT,
         .report_msg_statistics = false,
+        .logs_dir = nullptr,
 };
 
 static void help(FILE *fp) {

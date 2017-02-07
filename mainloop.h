@@ -74,4 +74,5 @@ struct opt {
     struct endpoint_address *master_addrs;
     unsigned long tcp_port;
     bool report_msg_statistics;
+    char *logs_dir;
 };

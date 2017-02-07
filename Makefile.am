@@ -134,6 +134,8 @@ mavlink_routerd_SOURCES = \
 	router.h \
 	timeout.h \
 	timeout.cpp \
+	ulog.h \
+	ulog.cpp \
 	util.c \
 	util.h
 
