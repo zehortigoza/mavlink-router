@@ -35,6 +35,7 @@ static struct opt opt = {
         .master_addrs = nullptr,
         .tcp_port = MAVLINK_TCP_PORT,
         .report_msg_statistics = false,
+        .logs_dir = nullptr,
 };
 
 static void help(FILE *fp) {
@@ -51,6 +52,7 @@ static void help(FILE *fp) {
             "  -t --tcp-port                Port in which mavlink-router will listen for TCP\n"
             "                               connections. Pass 0 to disable TCP listening.\n"
             "                               Default port 5760\n"
+            "  -l --log <directory>         Enable Flight Stack logging\n"
             "  -h --help                    Print this message\n"
             , program_invocation_short_name);
 }
@@ -97,6 +99,7 @@ static int parse_argv(int argc, char *argv[], const char **uart, char **udp_addr
         { "endpoints",              required_argument,  NULL,   'e' },
         { "report_msg_statistics",  no_argument,        NULL,   'r' },
         { "tcp-port",               required_argument,  NULL,   't' },
+        { "log",                    required_argument,  NULL,   'l' },
         { }
     };
     int c;
@@ -108,7 +111,7 @@ static int parse_argv(int argc, char *argv[], const char **uart, char **udp_addr
 
     *uart = NULL;
 
-    while ((c = getopt_long(argc, argv, "hb:e:rt:", options, NULL)) >= 0) {
+    while ((c = getopt_long(argc, argv, "hb:e:rt:l:", options, NULL)) >= 0) {
         switch (c) {
         case 'h':
             help(stdout);
@@ -150,6 +153,10 @@ static int parse_argv(int argc, char *argv[], const char **uart, char **udp_addr
                 help(stderr);
                 return -EINVAL;
             }
+            break;
+        }
+        case 'l': {
+            opt.logs_dir = optarg;
             break;
         }
         case '?':

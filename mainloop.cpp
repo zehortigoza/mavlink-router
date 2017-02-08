@@ -255,6 +255,9 @@ void Mainloop::loop()
     setup_signal_handlers();
     Endpoint::set_Mainloop(this);
 
+    if (_ulog)
+        _ulog->start();
+
     while (!should_exit) {
         int i;
 
@@ -285,6 +288,9 @@ void Mainloop::loop()
 
         _del_timeouts();
     }
+
+    if (_ulog)
+        _ulog->stop();
 
     // free all remaning Timeouts
     while (_timeouts) {
@@ -320,6 +326,9 @@ bool Mainloop::add_endpoints(Mainloop &mainloop, const char *uartstr, struct opt
         n_endpoints++;
 
     for (e = opt->ep_addrs; e; e = e->next)
+        n_endpoints++;
+
+    if (opt->logs_dir)
         n_endpoints++;
 
     g_endpoints = (Endpoint**) calloc(n_endpoints + 1, sizeof(Endpoint*));
@@ -360,6 +369,11 @@ bool Mainloop::add_endpoints(Mainloop &mainloop, const char *uartstr, struct opt
 
     if (opt->tcp_port)
         g_tcp_fd = tcp_open(opt->tcp_port);
+
+    if (opt->logs_dir) {
+        _ulog = new ULog(opt->logs_dir);
+        g_endpoints[i] = _ulog;
+    }
 
     if (opt->report_msg_statistics)
         add_timeout(MSEC_PER_SEC, _print_statistics_timeout_cb, this);
