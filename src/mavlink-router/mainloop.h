@@ -17,7 +17,7 @@
  */
 #pragma once
 
-#include "binlog.h"
+//#include "binlog.h"
 #include "comm.h"
 #include "endpoint.h"
 #include "timeout.h"

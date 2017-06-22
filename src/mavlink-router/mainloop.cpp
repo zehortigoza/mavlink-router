@@ -430,9 +430,9 @@ bool Mainloop::add_endpoints(Mainloop &mainloop, struct options *opt)
         g_tcp_fd = tcp_open(opt->tcp_port);
 
     if (opt->logs_dir) {
-        if (opt->mavlink_dialect == Ardupilotmega) {
+        /*if (opt->mavlink_dialect == Ardupilotmega) {
             _log_endpoint = new BinLog(opt->logs_dir);
-        } else if (opt->mavlink_dialect == Common) {
+        } else*/ if (opt->mavlink_dialect == Common) {
             _log_endpoint = new ULog(opt->logs_dir);
         } else {
             _log_endpoint = new AutoLog(opt->logs_dir);

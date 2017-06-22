@@ -14,19 +14,19 @@ AM_MAKEFLAGS = --no-print-directory
 GCC_COLORS ?= 'yes'
 export GCC_COLORS
 
-BUILT_SOURCES = include/mavlink/ardupilotmega/mavlink.h
+BUILT_SOURCES = include/mavlink/standard/mavlink.h
 
 clean-local:
 	rm -rf $(top_builddir)/include/mavlink
 	rm -f $(top_builddir)/gtest.a
 	rm -f $(top_builddir)/tests/unit_test
 
-include/mavlink/ardupilotmega/mavlink.h: modules/mavlink/pymavlink/tools/mavgen.py modules/mavlink/message_definitions/v1.0/ardupilotmega.xml
+include/mavlink/standard/mavlink.h: modules/mavlink/pymavlink/tools/mavgen.py modules/mavlink/message_definitions/v1.0/standard.xml
 	$(AM_V_GEN)python2 $(srcdir)/modules/mavlink/pymavlink/tools/mavgen.py \
 		-o include/mavlink \
 		--lang C \
 		--wire-protocol 2.0 \
-		$(srcdir)/modules/mavlink/message_definitions/v1.0/ardupilotmega.xml
+		$(srcdir)/modules/mavlink/message_definitions/v1.0/standard.xml
 
 #if SYSTEMD
 systemdsystemunitdir = @SYSTEMD_SYSTEMUNITDIR@
@@ -39,7 +39,7 @@ AM_CPPFLAGS = \
 	-I$(top_builddir) \
 	-I$(top_srcdir)/src \
 	-I$(top_builddir)/include/mavlink \
-	-I$(top_builddir)/include/mavlink/ardupilotmega \
+	-I$(top_builddir)/include/mavlink/standard \
 	-DSYSCONFDIR=\""$(sysconfdir)"\"
 
 AM_CFLAGS = \
@@ -130,8 +130,6 @@ bin_PROGRAMS += mavlink-routerd
 mavlink_routerd_SOURCES = \
 	src/mavlink-router/autolog.cpp \
 	src/mavlink-router/autolog.h \
-	src/mavlink-router/binlog.cpp \
-	src/mavlink-router/binlog.h \
 	src/mavlink-router/comm.h \
 	src/common/conf_file.cpp \
 	src/common/conf_file.h \
