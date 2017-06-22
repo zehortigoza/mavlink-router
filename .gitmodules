@@ -1,6 +1,7 @@
 [submodule "modules/mavlink"]
 	path = modules/mavlink
-	url = https://github.com/mavlink/mavlink.git
+	url = https://github.com/zehortigoza/mavlink.git
+	branch = arm-auth
 [submodule "modules/gtest"]
 	path = modules/gtest
 	url = https://github.com/google/googletest.git
